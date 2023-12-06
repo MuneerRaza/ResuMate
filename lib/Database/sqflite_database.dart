@@ -72,6 +72,7 @@ class DatabaseUtil {
     await db.execute('''
         CREATE TABLE $jobTable (
           ${JobFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
+          ${JobFields.title} TEXT,
           ${JobFields.companyId} INTEGER,
           ${JobFields.description} TEXT,
           ${JobFields.requirements} TEXT,
@@ -295,8 +296,8 @@ class DatabaseUtil {
   Future<int> updateJob(int id, Job job) async {
     final db = await instance.database;
 
-    return db.rawUpdate('UPDATE $jobTable SET ${JobFields.title} = ?, ${JobFields.companyId} = ?, ${JobFields.description} = ?, ${JobFields.requirements} = ?, ${JobFields.pay} = ?, ${JobFields.type} = ?, ${JobFields.location}, ${JobFields.createdDate} = ?, ${JobFields.lastDate} = ? WHERE ${JobFields.id} = ?',
-        [job.title, job.companyId, job.description, job.requirements, job.pay, job.type, job.location, job.createdDate, job.lastDate, id]);
+    return db.rawUpdate('UPDATE $jobTable SET ${JobFields.title} = ?, ${JobFields.companyId} = ?, ${JobFields.description} = ?, ${JobFields.requirements} = ?, ${JobFields.pay} = ?, ${JobFields.type} = ?, ${JobFields.location} = ?, ${JobFields.createdDate} = ?, ${JobFields.lastDate} = ? WHERE ${JobFields.id} = ?',
+        [job.title, job.companyId, job.description, job.requirements, job.pay, job.type, job.location, job.createdDate.toIso8601String(), job.lastDate.toIso8601String(), id]);
   }
 
   Future<int> deleteJob(int id) async {

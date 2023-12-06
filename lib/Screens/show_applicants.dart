@@ -21,9 +21,9 @@ class ShowApplicants extends StatefulWidget {
 class _ShowApplicantsState extends State<ShowApplicants> {
   bool showSoftSkills = true;
   bool showTechSkills = true;
-  late List<Applicant> applicantMatchSoftSkills = List.empty();
-  late List<Applicant>  applicantMatchTechSkills = List.empty();
-  late List<Applicant>  applicantMatch = List.empty();
+  late List<Applicant> applicantMatchSoftSkills = [];
+  late List<Applicant>  applicantMatchTechSkills = [];
+  late List<Applicant>  applicantMatch = [];
 
 
   @override
@@ -38,7 +38,7 @@ class _ShowApplicantsState extends State<ShowApplicants> {
       children: [
         Center(
           child: widget.allApplicants.isEmpty
-              ? Text('No Company registered', style: GoogleFonts.poppins())
+              ? Text('No Applicant registered', style: GoogleFonts.poppins())
               : buildApplicantList(),
         ),
         Row(

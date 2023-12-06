@@ -16,14 +16,13 @@ class PostAJob extends StatefulWidget {
 }
 
 class _PostAJobState extends State<PostAJob> {
-  final TextEditingController createdDateController = TextEditingController();
   final TextEditingController lastDateController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController requirementsController = TextEditingController();
   final TextEditingController payController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formfield = GlobalKey<FormState>();
 
   DateTime? selectedCreatedDate;
   DateTime? selectedLastDate;
@@ -45,17 +44,17 @@ class _PostAJobState extends State<PostAJob> {
           style: GoogleFonts.poppins(
             fontSize: width * 0.05,
             fontWeight: FontWeight.bold,
-            color: Colors.black, // Set text color
+            color: Colors.black,
           ),
         ),
         backgroundColor: Colors.grey[300],
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black), // Set icon color
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: _formKey,
+            key: _formfield,
             child: Column(
               children: [
                 TextFormField(
@@ -87,7 +86,7 @@ class _PostAJobState extends State<PostAJob> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: requirementsController,
                   decoration: const InputDecoration(
@@ -131,18 +130,6 @@ class _PostAJobState extends State<PostAJob> {
                       return 'Enter Location!';
                     }
                     return null;
-                  },
-                ),
-                const SizedBox(height: 16,),
-                buildDateSelector(
-                  label: 'Created Date',
-                  controller: createdDateController,
-                  onDateSelected: (DateTime date) {
-                    setState(() {
-                      selectedCreatedDate = date;
-                      createdDateController.text =
-                          DateFormat.yMMMd().format(date);
-                    });
                   },
                 ),
                 const SizedBox(height: 16),
@@ -201,7 +188,7 @@ class _PostAJobState extends State<PostAJob> {
                         ),
                       );
                     }
-                    else if (_formKey.currentState!.validate()) {
+                    else if (_formfield.currentState!.validate()) {
                       job = Job(title: titleController.text.trim(),
                           companyId: widget.company.id!,
                           description: descriptionController.text.trim(),
@@ -209,10 +196,24 @@ class _PostAJobState extends State<PostAJob> {
                           pay: double.parse(payController.text),
                           type: jobType!,
                           location: locationController.text.trim(),
-                          createdDate: DateTime.parse(createdDateController.text.trim()),
-                          lastDate: DateTime.parse(lastDateController.text.trim()));
+                          createdDate: DateFormat('MMM d, yyyy').parse(DateFormat('MMM d, yyyy').format(DateTime.now())),
+                          lastDate: DateFormat('MMM d, yyyy').parse(lastDateController.text.trim()));
+                      setState(() {
+                        isLoading = true;
+                      });
                       dbWork(job!).then((_){
-                        dispose();
+                        SnackBar(
+                          content: Text(
+                            'Job Added',
+                            style: GoogleFonts.poppins(),
+                          ),
+                          duration: const Duration(seconds: 1),
+                        );
+                        setState(() {
+                          isLoading = false;
+                        });
+                        PostedJobs(currentCompany: widget.company,);
+                        Navigator.of(context).pop();
                       });
                     }
                   },
@@ -242,20 +243,14 @@ class _PostAJobState extends State<PostAJob> {
     );
   }
 
-  @override
-  void dispose() {
-    titleController.dispose();
-    descriptionController.dispose();
-    requirementsController.dispose();
-    payController.dispose();
-    locationController.dispose();
-    PostedJobs.newJobs.add(job!);
-    super.dispose();
-  }
 
-  Future<Job> dbWork(Job job) async {
-    Job x = await DatabaseUtil.instance.insertJob(job);
-    return x;
+  Future<void> dbWork(Job job) async {
+    try {
+      Job x = await DatabaseUtil.instance.insertJob(job);
+      print("posted");
+    } catch (e) {
+      print("Error inserting job: $e");
+    }
   }
 
   Widget buildDateSelector({

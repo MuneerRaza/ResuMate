@@ -114,17 +114,15 @@ class _LoginState extends State<Login> {
                         final enteredEmail = emailController.text;
                         final enteredPassword = passController.text;
 
-                        // Check if the user with the entered email exists
                         final user =
                             await DatabaseUtil.instance.getUser(enteredEmail);
 
                         if (user != null && user.password == enteredPassword) {
                           var sharedpref =
                               await SharedPreferences.getInstance();
-                          var email = emailController.text.trim();
                           sharedpref.setBool(MyApp.LOGINKEY, true);
-                          sharedpref.setString(MyApp.EMAILKEY, email);
-                          User? user = await DatabaseUtil.instance.getUser(email);
+                          sharedpref.setString(MyApp.EMAILKEY, enteredEmail);
+                          User? user = await DatabaseUtil.instance.getUser(enteredEmail);
                           if (user == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -136,7 +134,7 @@ class _LoginState extends State<Login> {
                               ),
                             );
                           } else if (user.role == 'Applicant') {
-                            GlobalEmailKey.email = email;
+                            GlobalEmailKey.email = enteredEmail;
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => ApplicantDashboard(
@@ -145,7 +143,7 @@ class _LoginState extends State<Login> {
                               ),
                             );
                           } else if (user.role == 'Company') {
-                            GlobalEmailKey.email = email;
+                            GlobalEmailKey.email = enteredEmail;
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => CompanyDashboard(user: user,),

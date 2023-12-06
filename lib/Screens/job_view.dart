@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../Model/application_model.dart';
 import '../Model/job_model.dart';
 
 class JobView extends StatefulWidget {
@@ -13,6 +15,7 @@ class JobView extends StatefulWidget {
 }
 
 class _JobViewState extends State<JobView> {
+  Application application;
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery
@@ -43,9 +46,8 @@ class _JobViewState extends State<JobView> {
               Text(job.location),
               Text(job.requirements),
               Text(job.type),
-              Text(job.createdDate.toString()),
-              Text(job.lastDate.toString()),
-
+              Text(DateFormat('dd MMM, yyyy').format(job.createdDate)),
+              Text(DateFormat('dd MMM, yyyy').format(job.lastDate)),
             ],
           ),
         ),

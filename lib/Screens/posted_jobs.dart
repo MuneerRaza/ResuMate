@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:resumate/Screens/post_job.dart';
 
+import '../Database/sqflite_database.dart';
 import '../Model/company_model.dart';
 import '../Model/job_model.dart';
+import 'job_details.dart';
 
 class PostedJobs extends StatefulWidget {
   static List<Job> newJobs = [];
-  final List<Job> allJobs;
   final Company currentCompany;
-  const PostedJobs({required this.allJobs,
+  const PostedJobs({
     required this.currentCompany,
     super.key});
 
@@ -18,124 +20,121 @@ class PostedJobs extends StatefulWidget {
 }
 
 class _PostedJobsState extends State<PostedJobs> {
-  late List<Job> allCompanyJobs = List.empty();
-  late List<Job> currentCompanyJobs = List.empty();
-  bool showPrevJobs = false;
+  late List<Job> allJobs = [];
+  late List<Job> allCompanyJobs = [];
+  late List<Job> currentCompanyJobs = [];
+  bool showPrevJobs = true;
+  bool isLoading = true;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 
   @override
   void initState() {
-    makeList();
+
+    _fetchJobs().then((_) {makeList();
+    setState(() {
+      isLoading = false;
+    });
+    } );
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return  Stack(
-      children: [
-        Center(
-          child: (showPrevJobs ? allCompanyJobs.isEmpty : currentCompanyJobs.isEmpty )
-              ? Text('No Job Posted', style: GoogleFonts.poppins())
-              : buildJobsList(),
+    // Check if loading
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.blueGrey,),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
+      );
+    } else {
+      return Stack(
+        children: [
+          Center(
+            child: (showPrevJobs ? allCompanyJobs.isEmpty : currentCompanyJobs.isEmpty)
+                ? Text('No Job Posted', style: GoogleFonts.poppins())
+                : Padding(
+                  padding: const EdgeInsets.only(top: 50, left: 10, right: 10),
+                  child: buildJobsList(),
+                ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
                 flex: 5,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20),
-                  child: Text("Posted Jobs", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),),
-                )),
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: (showPrevJobs ? allCompanyJobs.isEmpty : currentCompanyJobs.isEmpty )
-                    ? null
-                    : () {
-                  _showFilterDialog(context);
-                },
+                  child: Text("Posted Jobs", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)),
+                ),
               ),
-            ),
-          ],
-        ),
-        Positioned(
-          bottom: 15,
-          right: 15,
-          child: FloatingActionButton(onPressed: (){
-            Navigator.of(context)
-                .push(_createRoute(PostAJob(company: widget.currentCompany,)));
-          },
-          child: const Icon(Icons.add),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: (showPrevJobs ? allCompanyJobs.isEmpty : currentCompanyJobs.isEmpty)
+                      ? null
+                      : () {
+                    _showFilterDialog(context);
+                  },
+                ),
+              ),
+            ],
           ),
-        )
-      ],
-    );
+          Positioned(
+            bottom: 15,
+            right: 15,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(_createRoute(PostAJob(company: widget.currentCompany)));
+              },
+              child: const Icon(Icons.add),
+            ),
+          )
+        ],
+      );
+    }
   }
+
 
   Widget buildJobsList() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 50, 10, 0),
-          child: ListView.builder(
-            itemCount: currentCompanyJobs.length,
-            itemBuilder: (BuildContext context, int index) {
-              Job job = currentCompanyJobs[index];
+    var thisList = showPrevJobs ? allCompanyJobs : currentCompanyJobs;
 
-              return SingleChildScrollView(
-                child: Card(
-                  child: ListTile(
-                    leading: Text(job.title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blueGrey),),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('Job Type: ${job.type}'),
-                        Text('Last Date to Apply: ${job.lastDate}'),
-                      ],
-                    ),
-                    onTap: (){
+    return ListView.builder(
+      itemCount: thisList.length,
+      itemBuilder: (BuildContext context, int index) {
+        Job job = thisList[index];
 
-                    },
+        return SingleChildScrollView(
+          child: Card(
+            child: ListTile(
+              leading: Text(job.title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blueGrey)),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Job Type: ${job.type}'),
+                  const SizedBox(height: 10,),
+                  Text('Last Date: ${DateFormat('dd MMM, yyyy').format(job.lastDate)}'),
+                ],
+              ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          JobDetails(job: job)
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-        if(showPrevJobs)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 50, 10, 0),
-          child: ListView.builder(
-            itemCount: allCompanyJobs.length,
-            itemBuilder: (BuildContext context, int index) {
-              Job job = allCompanyJobs[index];
-
-              return SingleChildScrollView(
-                child: Card(
-                  child: ListTile(
-                    leading: Text(job.title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('Job Type: ${job.type}', style: const TextStyle(color: Colors.grey),),
-                        Text('Last Date to Apply: ${job.lastDate}', style: const TextStyle(color: Colors.grey),),
-                      ],
-                    ),
-                    onTap: (){
-
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
+
 
   void _showFilterDialog(BuildContext context) {
     showDialog(
@@ -161,16 +160,18 @@ class _PostedJobsState extends State<PostedJobs> {
     );
   }
 
+  Future<void> _fetchJobs() async {
+    allJobs = await DatabaseUtil.instance.getAllJobs();
+  }
+
   void makeList() {
     DateTime currentDate = DateTime.now();
-    for(Job job in widget.allJobs){
-      if(widget.currentCompany.id == job.companyId){
-        allCompanyJobs.add(job);
-        if(job.lastDate.isAfter(currentDate) || job.lastDate.isAtSameMomentAs(currentDate)){
-          currentCompanyJobs.add(job);
-        }
-      }
-    }
+    allCompanyJobs = List.from(allJobs.where((job) => widget.currentCompany.id == job.companyId));
+
+    currentCompanyJobs = List.from(allCompanyJobs.where((job) =>
+    job.lastDate.isAfter(currentDate) || job.lastDate.isAtSameMomentAs(currentDate)
+    ));
+
   }
 }
 

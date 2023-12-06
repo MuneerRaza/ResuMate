@@ -19,10 +19,10 @@ class ApplicantDashboard extends StatefulWidget {
 }
 
 class _ApplicantDashboardState extends State<ApplicantDashboard> {
-  late List<Company> companyList = List.empty();
-  late List<Job> jobList = List.empty();
+  late List<Company> companyList = [];
+  late List<Job> jobList = [];
   late Applicant currentApplicant;
-  late List<Application> applicationList = List.empty();
+  late List<Application> applicationList = [];
   bool isLoading = false;
 
 

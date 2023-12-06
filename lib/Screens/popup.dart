@@ -182,14 +182,17 @@ class _CategorySelectionPopupState extends State<CategorySelectionPopup> {
   void dbWork(User user, String selectedCategory, context, String address, String phoneNo, int tech, int soft) async {
     await DatabaseUtil.instance.insertUser(user);
 
-    await DatabaseUtil.instance.updateUser(user);
       if(selectedCategory == 'Applicant'){
         Applicant applicant = Applicant(name: user.name, email: user.email, address: address, phoneNo: phoneNo, techRating: tech, softRating: soft);
         await DatabaseUtil.instance.insertApplicant(applicant);
       } else if (selectedCategory == 'Company') {
         Company company = Company(name: user.name, email: user.email, location: address, phoneNo: phoneNo, techRating: tech, softRating: soft);
+        try{
         await DatabaseUtil.instance.insertCompany(company);
-      }
+      }catch(e){
+          print("comapny insert error $e");
+        }
+    }
 
   }
 }

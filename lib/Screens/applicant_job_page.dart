@@ -41,19 +41,32 @@ class _JobsPageState extends State<JobsPage> {
         Center(
           child: companiesWithJobs.isEmpty
               ? Text('No Company registered', style: GoogleFonts.poppins())
-              : buildJobsList(),
+              : Padding(
+                padding: const EdgeInsets.only(top: 50, left: 10, right: 10),
+                child: buildJobsList(),
+              ),
         ),
-        Positioned(
-          top: 8.0,
-          right: 8.0,
-          child: IconButton(
-            icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: companiesWithJobs.isEmpty
-                ? null // Disable the button when companiesWithJobs is empty
-                : () {
-              onFilterButtonPressed(context);
-            },
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Expanded(
+                flex: 5,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Text("Jobs", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),),
+                )),
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                icon: const Icon(Icons.filter_alt_outlined),
+                onPressed: companiesWithJobs.isEmpty
+                    ? null // Disable the button when companiesWithJobs is empty
+                    : () {
+                  onFilterButtonPressed(context);
+                },
+              ),
+            )
+          ],
         ),
       ],
     );
@@ -82,9 +95,12 @@ class _JobsPageState extends State<JobsPage> {
           child: Column(
             children: [
               ListTile(
-                title: Text(
-                  company.name,
-                  style: GoogleFonts.poppins(),
+                titleAlignment: ListTileTitleAlignment.center,
+                title: Center(
+                  child: Text(
+                    company.name,
+                    style: GoogleFonts.poppins(color: Colors.blueGrey, fontWeight: FontWeight.w700, fontSize: 17),
+                  ),
                 ),
               ),
               ListView.builder(
@@ -94,17 +110,27 @@ class _JobsPageState extends State<JobsPage> {
                 itemBuilder: (BuildContext context, int jobIndex) {
                   Job job = jobs[jobIndex];
 
-                  return ListTile(
-                    title: Text(job.title, style: GoogleFonts.poppins()),
-                    subtitle: Text(job.description, style: GoogleFonts.poppins()),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                JobView(job: job)
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(10,0,10,15),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          color: Colors.grey, // Outline color
+                          width: 2.0, // Outline width
                         ),
-                      );
-                    },
+                        borderRadius: BorderRadius.circular(8.0), // Adjust border radius as needed
+                      ),
+                      title: Text(job.title, style: GoogleFonts.poppins()),
+                      subtitle: Text(job.description, style: GoogleFonts.poppins()),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  JobView(job: job)
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
@@ -159,7 +185,7 @@ class _JobsPageState extends State<JobsPage> {
 
   void makeList() {
     for(Company company in widget.companyList){
-      List<Job> jobs = List.empty();
+      List<Job> jobs = [];
       for(Job job in widget.jobList){
         if(job.companyId == company.id){
           jobs.add(job);

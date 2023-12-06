@@ -20,38 +20,29 @@ class CompanyDashboard extends StatefulWidget {
 }
 
 class _CompanyDashboardState extends State<CompanyDashboard> {
-  // late Map<Job, List<Application>> jobWithApplicants = {};
-  late List<Application> applicationList = List.empty();
-  late List<Applicant> applicantList = List.empty();
-  late List<Job> jobList = List.empty();
+  late List<Application> applicationList = [];
+  late List<Applicant> applicantList = [];
   late Company currentCompany;
-  bool isLoading = false;
-
+  bool isLoading = true;
 
   @override
   void initState() {
-    setState(() {
-      isLoading = true;
-    });
-    fetchApplicants().then((_) {
-      fetchJobs().then((_) {
-        fetchCompany().then((_){
-          fetchApplications().then((_){
-            setState(() {
-              isLoading = false;
-            });
-          });
-        });
-      });
-    });
     super.initState();
+    _initializeData();
   }
 
+  Future<void> _initializeData() async {
+    await _fetchApplicants();
+    await _fetchCompany();
+    await _fetchApplications();
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -59,7 +50,7 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
       ),
     );
 
-    if(isLoading){
+    if (isLoading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -88,8 +79,8 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
           ),
           body: TabBarView(
             children: [
-              ShowApplicants(allApplicants: applicantList,currentCompany: currentCompany,),
-              PostedJobs(allJobs: jobList, currentCompany: currentCompany,),
+              ShowApplicants(allApplicants: applicantList, currentCompany: currentCompany,),
+              PostedJobs(currentCompany: currentCompany,),
             ],
           ),
           drawer: Drawer(
@@ -103,27 +94,25 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
         ),
       );
     }
-
   }
 
-  Future<List<Application>> fetchApplications() async {
+  Future<void> _fetchApplications() async {
     applicationList = await DatabaseUtil.instance.getAllApplications();
-    return applicationList;
   }
 
-  Future<List<Job>> fetchJobs() async {
-    jobList = await DatabaseUtil.instance.getAllJobs();
-    return jobList;
-  }
 
-  Future<List<Applicant>> fetchApplicants() async {
+  Future<void> _fetchApplicants() async {
     applicantList = await DatabaseUtil.instance.getAllApplicants();
-    return applicantList;
   }
 
-  Future<Company> fetchCompany() async {
-    currentCompany = (await DatabaseUtil.instance.getCompany(widget.user.email))!;
-    return currentCompany;
-  }
+  Future<void> _fetchCompany() async {
+    var x = await DatabaseUtil.instance.getCompany(widget.user.email);
 
+    if(x!=null){
+      currentCompany = x;
+    }
+    else{
+      print("Company dashboard currentCompany get error");
+    }
+  }
 }

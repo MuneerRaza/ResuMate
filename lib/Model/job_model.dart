@@ -82,7 +82,7 @@ class Job {
 
   Map<String, Object?> toJson() => {
     JobFields.id: id,
-    JobFields.title: id,
+    JobFields.title: title,
     JobFields.companyId: companyId,
     JobFields.description: description,
     JobFields.requirements: requirements,
