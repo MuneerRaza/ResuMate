@@ -9,6 +9,7 @@ import 'package:resumate/Database/sqflite_database.dart';
 import '../Model/applicant_model.dart';
 import '../Model/user_model.dart';
 import 'applicant_job_page.dart';
+import 'applied_jobs.dart';
 
 class ApplicantDashboard extends StatefulWidget {
   final User user;
@@ -88,7 +89,7 @@ class _ApplicantDashboardState extends State<ApplicantDashboard> {
           children: [
             JobsPage(companyList: companyList, jobList: jobList, currentApplicant: currentApplicant),
             // PreviousJobPage()
-            Text("tab2")
+            AppliedJobs(applicant:currentApplicant),
           ],
         ),
         drawer: Drawer(

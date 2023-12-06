@@ -126,7 +126,7 @@ class _JobsPageState extends State<JobsPage> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) =>
-                                  JobView(job: job)
+                                  JobView(applicant: widget.currentApplicant, job: job)
                           ),
                         );
                       },
